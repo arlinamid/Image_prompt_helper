@@ -1,0 +1,58 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+
+  "manifest_version": 3,
+  "name": "Image prompt helper",
+  "description": "A curated library of prompt keyword ideas to help you become AI Art pros!",
+  "version": "1.0.2",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/content-script-loader.index.jsx.07c26ee2.33581a38.js"
+      ],
+      "matches": [
+        "https://www.bing.com/*",
+        "https://tengr.ai/*",
+        "https://app.leonardo.ai/*",
+		"https://chat.openai.com/*"
+      ],
+      "css": [
+        "assets/index.3aea3749.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://www.bing.com/*",
+        "https://tengr.ai/*",
+        "https://app.leonardo.ai/*",
+		"https://chat.openai.com/*"
+      ],
+      "resources": [
+        "assets/*"
+      ],
+      "use_dynamic_url": false
+    },
+    {
+      "matches": [
+        "https://www.bing.com/*",
+        "https://tengr.ai/*",
+        "https://app.leonardo.ai/*",
+		"https://chat.openai.com/*"
+      ],
+      "resources": [
+        "assets/index.jsx.07c26ee2.js"
+      ],
+      "use_dynamic_url": true
+    }
+  ]
+}
