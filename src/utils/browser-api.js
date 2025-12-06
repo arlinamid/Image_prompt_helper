@@ -3,9 +3,14 @@
  * Provides unified API for Chrome, Firefox, and Opera
  */
 
-// Detect browser environment
-const isFirefox = typeof browser !== 'undefined';
-const browserAPI = isFirefox ? browser : chrome;
+// Detect browser environment - Firefox uses 'browser', Chrome uses 'chrome'
+// In Firefox, both 'browser' and 'chrome' may be available, but 'browser' is preferred
+const isFirefox = typeof browser !== 'undefined' && typeof browser.runtime !== 'undefined';
+const browserAPI = isFirefox ? browser : (typeof chrome !== 'undefined' ? chrome : null);
+
+if (!browserAPI) {
+  console.error('No browser extension API found');
+}
 
 /**
  * Get extension runtime

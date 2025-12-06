@@ -6,11 +6,9 @@ import { runtime } from './browser-api';
  * @returns {string} Full extension URL
  */
 export function getAssetURL(path) {
-  // Check if running from dist folder or root folder
-  const manifest = runtime.getManifest();
-  const isDistBuild = manifest.content_scripts?.[0]?.js?.[0]?.startsWith('assets/');
-  const basePath = isDistBuild ? 'assets' : 'dist/assets';
-  return runtime.getURL(`${basePath}/${path}`);
+  // All dist builds use 'assets/' as the base path
+  // The manifest always points to assets/contentScript.js
+  return runtime.getURL(`assets/${path}`);
 }
 
 /**
