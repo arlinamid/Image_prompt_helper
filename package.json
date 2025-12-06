@@ -1,6 +1,6 @@
 {
   "name": "image-prompt-helper",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A curated library of prompt keyword ideas to help you become AI Art pros!",
   "main": "index.js",
   "scripts": {
