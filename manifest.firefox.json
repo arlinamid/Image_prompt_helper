@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Image Prompt Helper",
   "description": "A curated library of 3,143 prompt keywords + AI enhancement for AI image generation",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"
