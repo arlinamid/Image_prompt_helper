@@ -35,9 +35,9 @@
 
 | Browser | Download | Manifest |
 |---------|----------|----------|
-| **Chrome / Edge / Brave** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.0.3_chrome.zip) | V3 |
-| **Firefox** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.0.3_firefox.zip) | V2 |
-| **Opera** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.0.3_opera.zip) | V3 |
+| **Chrome / Edge / Brave** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.2.0_chrome.zip) | V3 |
+| **Firefox** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.2.0_firefox.zip) | V2 |
+| **Opera** | [📦 Download](https://github.com/arlinamid/Image_prompt_helper/releases/latest/download/Image_prompt_helper_v1.2.0_opera.zip) | V3 |
 
 > 💡 **Tip:** Extract the zip, then load as unpacked extension in your browser.
 

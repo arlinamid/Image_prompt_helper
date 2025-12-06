@@ -15,7 +15,7 @@ export function AboutTab() {
           className="about-logo"
         />
         <h1>Image Prompt Helper</h1>
-        <p className="version">Version 1.0.2</p>
+        <p className="version">Version 1.2.0</p>
         <p className="tagline">Your AI Art Prompt Companion</p>
       </div>
 
