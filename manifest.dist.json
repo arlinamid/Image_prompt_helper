@@ -12,7 +12,7 @@
   },
   "content_scripts": [
     {
-      "js": ["dist/assets/contentScript.js"],
+      "js": ["assets/contentScript.js"],
       "matches": [
         "https://www.bing.com/*",
         "https://tengr.ai/*",
@@ -21,7 +21,7 @@
         "https://gemini.google.com/*",
         "https://ideogram.ai/*"
       ],
-      "css": ["dist/assets/style.css"]
+      "css": ["assets/style.css"]
     }
   ],
   "web_accessible_resources": [
@@ -34,7 +34,7 @@
         "https://gemini.google.com/*",
         "https://ideogram.ai/*"
       ],
-      "resources": ["dist/assets/*"],
+      "resources": ["assets/*"],
       "use_dynamic_url": false
     }
   ],
@@ -48,3 +48,4 @@
     "https://ideogram.ai/*"
   ]
 }
+
