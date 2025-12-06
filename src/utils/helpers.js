@@ -1,14 +1,16 @@
+import { runtime } from './browser-api';
+
 /**
- * Get the URL for a Chrome extension asset
+ * Get the URL for a browser extension asset
  * @param {string} path - Asset path relative to assets folder
- * @returns {string} Full Chrome extension URL
+ * @returns {string} Full extension URL
  */
 export function getAssetURL(path) {
   // Check if running from dist folder or root folder
-  const manifest = chrome.runtime.getManifest();
+  const manifest = runtime.getManifest();
   const isDistBuild = manifest.content_scripts?.[0]?.js?.[0]?.startsWith('assets/');
   const basePath = isDistBuild ? 'assets' : 'dist/assets';
-  return chrome.runtime.getURL(`${basePath}/${path}`);
+  return runtime.getURL(`${basePath}/${path}`);
 }
 
 /**

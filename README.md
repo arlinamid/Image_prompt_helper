@@ -67,21 +67,39 @@
    npm install
    ```
 
-3. **Build the extension**
+3. **Build for your browser**
    ```bash
-   npm run build
+   # Build for Chrome (default)
+   npm run build:chrome
+   
+   # Build for Firefox
+   npm run build:firefox
+   
+   # Build for Opera
+   npm run build:opera
+   
+   # Build for all browsers
+   npm run build:all
    ```
 
-4. **Load in Chrome**
+4. **Load the extension**
+
+   **Chrome:**
    - Open `chrome://extensions`
    - Enable "Developer mode"
    - Click "Load unpacked"
-   - Select the `dist` folder
+   - Select `dist-chrome` folder
 
-### Alternative: Load from Root
+   **Firefox:**
+   - Open `about:debugging#/runtime/this-firefox`
+   - Click "Load Temporary Add-on"
+   - Select `dist-firefox/manifest.json`
 
-You can also load the extension from the root folder (uses `dist/assets` path):
-- Select the root `Image_prompt_helper` folder instead of `dist`
+   **Opera:**
+   - Open `opera://extensions`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select `dist-opera` folder
 
 ## 🚀 Usage
 
@@ -127,14 +145,18 @@ The AI enhancement feature uses Google Gemini API (free tier available):
 # Install dependencies
 npm install
 
-# Development build
-npm run dev
+# Build for specific browser
+npm run build:chrome    # Chrome/Chromium
+npm run build:firefox   # Firefox
+npm run build:opera     # Opera
 
-# Production build
-npm run build
+# Build for all browsers
+npm run build:all
 
-# Watch mode (auto-rebuild)
-npm run watch
+# Watch mode (auto-rebuild on changes)
+npm run watch:chrome
+npm run watch:firefox
+npm run watch:opera
 ```
 
 ### Project Structure

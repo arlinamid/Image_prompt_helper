@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { storage } from '../utils/browser-api';
 
 const STORAGE_KEY = 'gemini_api_key';
 
@@ -23,51 +24,28 @@ async function getClient(apiKey) {
 }
 
 /**
- * Save API key to Chrome storage
+ * Save API key to browser storage
  */
 export async function saveApiKey(apiKey) {
-  return new Promise((resolve, reject) => {
-    try {
-      if (!chrome?.storage?.local) {
-        reject(new Error('Chrome storage not available'));
-        return;
-      }
-      chrome.storage.local.set({ [STORAGE_KEY]: apiKey }, () => {
-        if (chrome.runtime.lastError) {
-          reject(new Error(chrome.runtime.lastError.message));
-        } else {
-          resolve();
-        }
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
+  try {
+    await storage.local.set({ [STORAGE_KEY]: apiKey });
+  } catch (e) {
+    console.error('Failed to save API key:', e);
+    throw new Error('Storage not available');
+  }
 }
 
 /**
- * Get API key from Chrome storage
+ * Get API key from browser storage
  */
 export async function getApiKey() {
-  return new Promise((resolve) => {
-    try {
-      if (!chrome?.storage?.local) {
-        resolve(null);
-        return;
-      }
-      chrome.storage.local.get([STORAGE_KEY], (result) => {
-        if (chrome.runtime.lastError) {
-          console.warn('Storage error:', chrome.runtime.lastError.message);
-          resolve(null);
-        } else {
-          resolve(result[STORAGE_KEY] || null);
-        }
-      });
-    } catch (e) {
-      console.warn('Storage access error:', e);
-      resolve(null);
-    }
-  });
+  try {
+    const result = await storage.local.get([STORAGE_KEY]);
+    return result[STORAGE_KEY] || null;
+  } catch (e) {
+    console.warn('Storage access error:', e);
+    return null;
+  }
 }
 
 /**

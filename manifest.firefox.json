@@ -1,0 +1,51 @@
+{
+  "manifest_version": 2,
+  "name": "Image Prompt Helper",
+  "description": "A curated library of 3,143 prompt keywords + AI enhancement for AI image generation",
+  "version": "1.0.2",
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "browser_action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "js": ["assets/contentScript.js"],
+      "matches": [
+        "https://www.bing.com/*",
+        "https://tengr.ai/*",
+        "https://app.leonardo.ai/*",
+        "https://chatgpt.com/*",
+        "https://gemini.google.com/*",
+        "https://ideogram.ai/*"
+      ],
+      "css": ["assets/style.css"]
+    }
+  ],
+  "web_accessible_resources": [
+    "assets/*"
+  ],
+  "permissions": [
+    "storage",
+    "activeTab",
+    "https://www.bing.com/*",
+    "https://tengr.ai/*",
+    "https://app.leonardo.ai/*",
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://ideogram.ai/*"
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "image-prompt-helper@arlinamid",
+      "strict_min_version": "109.0"
+    }
+  }
+}
+

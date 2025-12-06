@@ -5,12 +5,28 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "watch": "vite build --watch"
+    "build": "npm run build:chrome",
+    "build:chrome": "cross-env BROWSER=chrome vite build",
+    "build:firefox": "cross-env BROWSER=firefox vite build",
+    "build:opera": "cross-env BROWSER=opera vite build",
+    "build:all": "npm run build:chrome && npm run build:firefox && npm run build:opera",
+    "watch": "cross-env BROWSER=chrome vite build --watch",
+    "watch:chrome": "cross-env BROWSER=chrome vite build --watch",
+    "watch:firefox": "cross-env BROWSER=firefox vite build --watch",
+    "watch:opera": "cross-env BROWSER=opera vite build --watch"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "chrome-extension",
+    "firefox-addon",
+    "opera-extension",
+    "ai-art",
+    "prompt-helper",
+    "midjourney",
+    "stable-diffusion",
+    "dall-e"
+  ],
+  "author": "arlinamid",
+  "license": "MIT",
   "dependencies": {
     "@google/genai": "^1.0.0",
     "react": "^18.2.0",
@@ -18,8 +34,8 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "cross-env": "^7.0.3",
     "terser": "^5.31.1",
     "vite": "^5.4.21"
   }
 }
-

@@ -3,37 +3,55 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 import fs from 'fs';
 
-// Custom plugin to handle Chrome extension specific needs
-function chromeExtensionPlugin() {
+// Get target browser from environment variable or default to 'chrome'
+const targetBrowser = process.env.BROWSER || 'chrome';
+const validBrowsers = ['chrome', 'firefox', 'opera'];
+
+if (!validBrowsers.includes(targetBrowser)) {
+  console.error(`Invalid browser: ${targetBrowser}. Valid options: ${validBrowsers.join(', ')}`);
+  process.exit(1);
+}
+
+console.log(`Building for: ${targetBrowser}`);
+
+// Custom plugin to handle browser-specific extension needs
+function browserExtensionPlugin(browser) {
   return {
-    name: 'chrome-extension',
+    name: 'browser-extension',
     writeBundle() {
-      // Copy manifest to dist
-      const manifest = JSON.parse(fs.readFileSync('manifest.dist.json', 'utf-8'));
-      fs.writeFileSync('dist/manifest.json', JSON.stringify(manifest, null, 2));
+      const outDir = `dist-${browser}`;
+      
+      // Copy browser-specific manifest
+      const manifestFile = `manifest.${browser}.json`;
+      if (fs.existsSync(manifestFile)) {
+        const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf-8'));
+        fs.writeFileSync(`${outDir}/manifest.json`, JSON.stringify(manifest, null, 2));
+      }
       
       // Copy icons
-      fs.copyFileSync('icon48.png', 'dist/icon48.png');
-      fs.copyFileSync('icon128.png', 'dist/icon128.png');
+      fs.copyFileSync('icon48.png', `${outDir}/icon48.png`);
+      fs.copyFileSync('icon128.png', `${outDir}/icon128.png`);
       
       // Copy popup folder
-      if (!fs.existsSync('dist/src/popup')) {
-        fs.mkdirSync('dist/src/popup', { recursive: true });
+      if (!fs.existsSync(`${outDir}/src/popup`)) {
+        fs.mkdirSync(`${outDir}/src/popup`, { recursive: true });
       }
-      fs.copyFileSync('src/popup/popup.html', 'dist/src/popup/popup.html');
+      fs.copyFileSync('src/popup/popup.html', `${outDir}/src/popup/popup.html`);
       
       // Copy images folder
       if (fs.existsSync('assets/images')) {
-        fs.cpSync('assets/images', 'dist/assets/images', { recursive: true });
+        fs.cpSync('assets/images', `${outDir}/assets/images`, { recursive: true });
       }
+      
+      console.log(`✓ Built extension for ${browser} in ${outDir}/`);
     },
   };
 }
 
 export default defineConfig({
-  plugins: [react(), chromeExtensionPlugin()],
+  plugins: [react(), browserExtensionPlugin(targetBrowser)],
   build: {
-    outDir: 'dist',
+    outDir: `dist-${targetBrowser}`,
     emptyDirBeforeWrite: true,
     rollupOptions: {
       input: {
@@ -45,7 +63,6 @@ export default defineConfig({
         assetFileNames: 'assets/[name].[ext]',
       },
     },
-    // Chrome extensions need this for content scripts
     cssCodeSplit: false,
     sourcemap: false,
     minify: 'esbuild',
@@ -54,4 +71,3 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
 });
-
