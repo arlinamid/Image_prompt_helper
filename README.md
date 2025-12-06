@@ -91,9 +91,9 @@
    - Select `dist-chrome` folder
 
    **Firefox:**
-   - Open `about:debugging#/runtime/this-firefox`
-   - Click "Load Temporary Add-on"
-   - Select `dist-firefox/manifest.json`
+   - Open `about:addons` (or `about:debugging#/runtime/this-firefox`)
+   - Click the gear icon → "Install Add-on From File"
+   - Select the `.zip` file directly (no extraction needed)
 
    **Opera:**
    - Open `opera://extensions`
