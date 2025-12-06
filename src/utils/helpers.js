@@ -125,7 +125,7 @@ export function getRootSelector() {
     case 'www.bing.com':
       return '#b_content';
     case 'tengr.ai':
-      return 'body';
+      return '#artwork-result-container';
     case 'app.leonardo.ai':
       // Use body to avoid conflicts with dynamic class names
       return 'body';
@@ -151,7 +151,8 @@ export function getInputSelector() {
     case 'www.bing.com':
       return '#b_searchboxForm input';
     case 'tengr.ai':
-      return 'textarea.flex';
+      // Textarea in the sticky bottom container
+      return '#artwork-result-container .sticky textarea';
     case 'app.leonardo.ai':
       // Support both legacy (#prompt-textarea) and normal mode (chakra textarea)
       return '#prompt-textarea, textarea[class*="chakra"]';
