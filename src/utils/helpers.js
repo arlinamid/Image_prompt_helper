@@ -30,12 +30,21 @@ export function isProseMirror(element) {
 }
 
 /**
+ * Check if element is a Quill editor (like Gemini)
+ * @param {HTMLElement} element - Element to check
+ * @returns {boolean} True if Quill editor
+ */
+export function isQuillEditor(element) {
+  return element.classList.contains('ql-editor');
+}
+
+/**
  * Get input value from regular input or contenteditable
  * @param {HTMLElement} element - Input element
  * @returns {string} Input value
  */
 export function getInputValue(element) {
-  if (isContentEditable(element) || isProseMirror(element)) {
+  if (isContentEditable(element) || isProseMirror(element) || isQuillEditor(element)) {
     // Get text content and clean up extra whitespace/newlines
     const text = element.innerText || element.textContent || '';
     // Remove trailing newlines but preserve internal ones if needed
@@ -50,15 +59,18 @@ export function getInputValue(element) {
  * @param {string} value - Value to set
  */
 export function setNativeInputValue(element, value) {
-  if (isContentEditable(element) || isProseMirror(element)) {
+  if (isContentEditable(element) || isProseMirror(element) || isQuillEditor(element)) {
     // Clean value - remove extra newlines
     const cleanValue = value.replace(/\n+$/, '').replace(/^\n+/, '');
     
     // For ProseMirror (ChatGPT), wrap in <p> tag
     if (isProseMirror(element)) {
       element.innerHTML = `<p>${cleanValue}</p>`;
+    } else if (isQuillEditor(element)) {
+      // For Quill editor (Gemini), wrap in <p> tags to match Quill's internal format
+      element.innerHTML = `<p>${cleanValue}</p>`;
     } else {
-      // For other contenteditable (like Gemini's Quill), set text directly
+      // For other contenteditable
       element.textContent = cleanValue;
     }
     
@@ -70,12 +82,15 @@ export function setNativeInputValue(element, value) {
     sel.removeAllRanges();
     sel.addRange(range);
     
-    // Dispatch input event
+    // Dispatch input event - Quill and other editors listen for this
     element.dispatchEvent(new InputEvent('input', { 
       bubbles: true, 
       cancelable: true,
       inputType: 'insertText'
     }));
+    
+    // Also dispatch a custom event that some frameworks listen for
+    element.dispatchEvent(new Event('change', { bubbles: true }));
   } else {
     // For regular inputs/textareas
     const previousValue = element.value;
@@ -160,7 +175,8 @@ export function getInputSelector() {
     case 'chatgpt.com':
       return '#prompt-textarea';
     case 'gemini.google.com':
-      return 'rich-textarea .ql-editor';
+      // Quill editor inside rich-textarea - target the contenteditable div
+      return 'rich-textarea .ql-editor, .ql-editor[contenteditable="true"]';
     case 'ideogram.ai':
       return 'textarea.MuiInputBase-inputMultiline';
     default:
