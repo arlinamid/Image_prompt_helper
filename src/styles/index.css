@@ -248,7 +248,7 @@
 
 .search-input {
   width: 100%;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) 32px;
   padding-left: 36px;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
@@ -270,7 +270,7 @@
 
 .search-icon {
   position: absolute;
-  left: 28px;
+  left: 26px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-muted);
@@ -280,7 +280,7 @@
 
 .search-clear {
   position: absolute;
-  right: 24px;
+  right: 20px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
