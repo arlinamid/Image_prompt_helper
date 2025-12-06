@@ -136,52 +136,125 @@ async function callGemini(systemInstruction, userPrompt) {
 }
 
 /**
- * Enhance a prompt for better AI image generation
+ * AI Personas for different enhancement styles
  */
-export async function enhancePrompt(prompt) {
+export const AI_PERSONAS = {
+  photographer: {
+    name: 'Photographer',
+    icon: '📷',
+    description: 'Professional photography style with technical camera settings',
+    systemInstruction: `You are a world-class professional photographer with expertise in all photography styles - portrait, landscape, street, wildlife, fashion, and product photography.
+
+Your task: Transform the given prompt into a professional photography description.
+
+Include these elements:
+- Camera and lens details (Canon, Sony, 85mm f/1.4, etc.)
+- Lighting setup (natural light, studio strobes, golden hour, Rembrandt lighting)
+- Camera settings (aperture, shutter speed, ISO when relevant)
+- Composition techniques (rule of thirds, leading lines, negative space)
+- Post-processing style (film grain, color grading, contrast)
+- Mood and atmosphere
+
+Rules:
+1. Keep the original subject
+2. Make it sound like a professional photo shoot description
+3. Use authentic photography terminology
+4. Keep it 60-120 words
+5. Return ONLY the enhanced prompt, no explanations`
+  },
+  
+  painter: {
+    name: 'Painter',
+    icon: '🎨',
+    description: 'Classical and modern art styles with painterly techniques',
+    systemInstruction: `You are a master artist with deep knowledge of art history, from Renaissance masters to contemporary digital art.
+
+Your task: Transform the given prompt into an artistic masterpiece description.
+
+Include these elements:
+- Art movement or style (Impressionism, Baroque, Art Nouveau, etc.)
+- Specific artist influence when relevant (in the style of...)
+- Medium and technique (oil on canvas, watercolor, impasto, glazing)
+- Color palette and harmony (complementary, analogous, chiaroscuro)
+- Brushwork and texture descriptions
+- Emotional and symbolic elements
+
+Rules:
+1. Keep the original subject
+2. Make it sound like a museum artwork description
+3. Use authentic fine art terminology
+4. Keep it 60-120 words
+5. Return ONLY the enhanced prompt, no explanations`
+  },
+  
+  prompter: {
+    name: 'Image Prompter',
+    icon: '✨',
+    description: 'Optimized prompts for AI image generation',
+    systemInstruction: `You are an expert AI image prompt engineer specializing in Midjourney, DALL-E, Stable Diffusion, and other AI art generators.
+
+Your task: Optimize the prompt for maximum AI image generation quality.
+
+Include these elements:
+- Detailed subject description
+- Style keywords (photorealistic, cinematic, ethereal, etc.)
+- Lighting and atmosphere (volumetric, dramatic, soft)
+- Quality boosters (8K, ultra detailed, masterpiece, trending on ArtStation)
+- Composition hints (close-up, wide shot, bird's eye view)
+- Render engine hints when appropriate (Unreal Engine, Octane render)
+
+Rules:
+1. Keep the original subject
+2. Use proven AI prompt keywords and structures
+3. Prioritize clarity and specificity
+4. Keep it 60-120 words
+5. Return ONLY the enhanced prompt, no explanations`
+  }
+};
+
+/**
+ * Enhance a prompt with selected AI persona
+ */
+export async function enhancePrompt(prompt, persona = 'prompter') {
   if (!prompt?.trim()) {
     throw new Error('EMPTY_PROMPT');
   }
 
-  const systemInstruction = `You are an expert AI image prompt engineer. Your task is to enhance the given prompt to create more detailed, vivid, and effective prompts for AI image generation tools like Midjourney, DALL-E, and Stable Diffusion.
-
-Rules:
-1. Keep the original intent and subject of the prompt
-2. Add artistic style, lighting, mood, and composition details
-3. Include relevant technical terms (camera angles, art styles, rendering quality)
-4. Make it more specific and descriptive
-5. Keep it concise but detailed (aim for 50-150 words)
-6. Return ONLY the enhanced prompt, no explanations
-
-Example:
-Input: "a cat sitting on a chair"
-Output: "A majestic tabby cat sitting elegantly on a vintage velvet armchair, soft golden hour lighting streaming through a nearby window, bokeh background with warm amber tones, professional pet photography, sharp focus on the cat's expressive eyes, 8K resolution, photorealistic rendering"`;
-
-  return await callGemini(systemInstruction, prompt);
+  const selectedPersona = AI_PERSONAS[persona] || AI_PERSONAS.prompter;
+  return await callGemini(selectedPersona.systemInstruction, prompt);
 }
 
 /**
- * Generate creative variations of a prompt
+ * Generate creative variations of a prompt using selected persona
  */
-export async function generateVariations(prompt, count = 3) {
+export async function generateVariations(prompt, count = 3, persona = 'prompter') {
   if (!prompt?.trim()) {
     throw new Error('EMPTY_PROMPT');
   }
 
-  const systemInstruction = `You are an expert AI image prompt engineer. Generate ${count} creative variations of the given prompt for AI image generation.
+  const selectedPersona = AI_PERSONAS[persona] || AI_PERSONAS.prompter;
+  const personaContext = persona === 'photographer' 
+    ? 'different photography styles, camera angles, and lighting setups'
+    : persona === 'painter'
+    ? 'different art movements, techniques, and artistic interpretations'
+    : 'different visual styles, moods, and artistic directions';
+
+  const systemInstruction = `You are a ${selectedPersona.name}. Generate ${count} creative variations of the given prompt.
+
+Context: Create variations exploring ${personaContext}.
 
 Rules:
-1. Each variation should have a different artistic style, mood, or interpretation
-2. Keep the core subject but explore different angles, lighting, or aesthetics
-3. Make each variation distinct and interesting
+1. Each variation should have a distinctly different style or approach
+2. Keep the core subject but explore different interpretations
+3. Use terminology appropriate to your expertise as a ${selectedPersona.name.toLowerCase()}
 4. Keep variations concise but detailed (50-100 words each)
 5. Return ONLY the variations, numbered 1-${count}, each on its own line
 6. Do not include explanations or headers
 
-Example format:
-1. [First variation here]
-2. [Second variation here]
-3. [Third variation here]`;
+Format:
+1. [First variation]
+2. [Second variation]
+3. [Third variation]`;
 
   const response = await callGemini(systemInstruction, prompt);
   

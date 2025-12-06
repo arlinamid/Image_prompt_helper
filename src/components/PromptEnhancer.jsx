@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { enhancePrompt, generateVariations, hasApiKey } from '../services/geminiApi';
+import { enhancePrompt, generateVariations, hasApiKey, AI_PERSONAS } from '../services/geminiApi';
 import { ApiKeyModal } from './ApiKeyModal';
 import { cx } from '../utils/helpers';
 
@@ -15,6 +15,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
   const [variations, setVariations] = useState([]);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('enhance');
+  const [selectedPersona, setSelectedPersona] = useState('prompter');
 
   useEffect(() => {
     checkApiKey();
@@ -36,7 +37,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
     setEnhancedPrompt('');
 
     try {
-      const result = await enhancePrompt(currentPrompt);
+      const result = await enhancePrompt(currentPrompt, selectedPersona);
       setEnhancedPrompt(result);
     } catch (err) {
       handleError(err);
@@ -56,7 +57,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
     setVariations([]);
 
     try {
-      const results = await generateVariations(currentPrompt, 3);
+      const results = await generateVariations(currentPrompt, 3, selectedPersona);
       setVariations(results);
     } catch (err) {
       handleError(err);
@@ -101,6 +102,9 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
     );
   }
 
+  const personaKeys = Object.keys(AI_PERSONAS);
+  const currentPersona = AI_PERSONAS[selectedPersona];
+
   return (
     <>
       <div className="prompt-enhancer">
@@ -113,6 +117,27 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
           >
             ⚙️
           </button>
+        </div>
+
+        {/* AI Persona Selector */}
+        <div className="persona-selector">
+          <div className="persona-label">AI Mode:</div>
+          <div className="persona-buttons">
+            {personaKeys.map((key) => {
+              const persona = AI_PERSONAS[key];
+              return (
+                <button
+                  key={key}
+                  className={cx('persona-btn', { active: selectedPersona === key })}
+                  onClick={() => setSelectedPersona(key)}
+                  title={persona.description}
+                >
+                  <span className="persona-icon">{persona.icon}</span>
+                  <span className="persona-name">{persona.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="enhancer-tabs">
@@ -150,8 +175,8 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
                   </>
                 ) : (
                   <>
-                    <span>🚀</span>
-                    Enhance with AI
+                    <span>{currentPersona.icon}</span>
+                    Enhance as {currentPersona.name}
                   </>
                 )}
               </button>
