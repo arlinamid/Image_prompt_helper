@@ -23,3 +23,4 @@ export function SubcategoryNav({ subcategories, activeSubcategory, onSelect }) {
   );
 }
 
+

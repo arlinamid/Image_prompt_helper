@@ -20,6 +20,25 @@ export const runtime = {
   getManifest: () => browserAPI.runtime.getManifest(),
   get lastError() {
     return browserAPI.runtime.lastError;
+  },
+  onMessage: browserAPI?.runtime?.onMessage || {
+    addListener: () => { },
+    removeListener: () => { }
+  },
+  sendMessage: (message) => {
+    return new Promise((resolve, reject) => {
+      if (isFirefox) {
+        browserAPI.runtime.sendMessage(message).then(resolve).catch(reject);
+      } else {
+        browserAPI.runtime.sendMessage(message, (response) => {
+          if (browserAPI.runtime.lastError) {
+            reject(new Error(browserAPI.runtime.lastError.message));
+          } else {
+            resolve(response);
+          }
+        });
+      }
+    });
   }
 };
 

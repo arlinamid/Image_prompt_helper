@@ -45,3 +45,4 @@ export function CategoryTabs({ categories, selectedCategory, onSelect }) {
   );
 }
 
+

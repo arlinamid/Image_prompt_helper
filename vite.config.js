@@ -20,29 +20,29 @@ function browserExtensionPlugin(browser) {
     name: 'browser-extension',
     writeBundle() {
       const outDir = `dist-${browser}`;
-      
+
       // Copy browser-specific manifest
       const manifestFile = `manifest.${browser}.json`;
       if (fs.existsSync(manifestFile)) {
         const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf-8'));
         fs.writeFileSync(`${outDir}/manifest.json`, JSON.stringify(manifest, null, 2));
       }
-      
+
       // Copy icons
       fs.copyFileSync('icon48.png', `${outDir}/icon48.png`);
       fs.copyFileSync('icon128.png', `${outDir}/icon128.png`);
-      
+
       // Copy popup folder
       if (!fs.existsSync(`${outDir}/src/popup`)) {
         fs.mkdirSync(`${outDir}/src/popup`, { recursive: true });
       }
       fs.copyFileSync('src/popup/popup.html', `${outDir}/src/popup/popup.html`);
-      
+
       // Copy images folder
       if (fs.existsSync('assets/images')) {
         fs.cpSync('assets/images', `${outDir}/assets/images`, { recursive: true });
       }
-      
+
       console.log(`✓ Built extension for ${browser} in ${outDir}/`);
     },
   };
@@ -56,6 +56,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         contentScript: resolve(__dirname, 'src/content-script/index.jsx'),
+        background: resolve(__dirname, 'src/background/background.js'),
       },
       output: {
         entryFileNames: 'assets/[name].js',

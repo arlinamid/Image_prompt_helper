@@ -22,3 +22,4 @@ export function Subcategory({ id, name, keywords, categoryName, isSearchResult }
   );
 }
 
+
