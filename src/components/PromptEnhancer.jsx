@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { enhancePrompt, generateVariations, hasApiKey, AI_PERSONAS } from '../services/geminiApi';
 import { ApiKeyModal } from './ApiKeyModal';
-import { cx } from '../utils/helpers';
+import { cx, getAttachedImages } from '../utils/helpers';
+import {
+  Sparkles,
+  Settings,
+  Camera,
+  Palette,
+  Key,
+  Dices,
+  AlertTriangle,
+  Loader2,
+  Image as ImageIcon
+} from 'lucide-react';
+
+const ICON_MAP = {
+  'Camera': Camera,
+  'Palette': Palette,
+  'Sparkles': Sparkles
+};
 
 /**
  * Prompt enhancer component with Gemini AI integration
@@ -16,6 +33,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('enhance');
   const [selectedPersona, setSelectedPersona] = useState('prompter');
+  const [attachedImageInfo, setAttachedImageInfo] = useState(null);
 
   useEffect(() => {
     checkApiKey();
@@ -35,9 +53,18 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
     setIsEnhancing(true);
     setError(null);
     setEnhancedPrompt('');
+    setAttachedImageInfo(null);
 
     try {
-      const result = await enhancePrompt(currentPrompt, selectedPersona);
+      // Check for attached images in the input area
+      const images = await getAttachedImages();
+
+      if (images && images.length > 0) {
+        const count = images.length;
+        setAttachedImageInfo(`${count} image${count > 1 ? 's' : ''} detected and included`);
+      }
+
+      const result = await enhancePrompt(currentPrompt, selectedPersona, images);
       setEnhancedPrompt(result);
     } catch (err) {
       handleError(err);
@@ -90,11 +117,11 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
     return (
       <>
         <div className="enhancer-setup">
-          <div className="setup-icon">✨</div>
+          <div className="setup-icon"><Sparkles size={32} /></div>
           <h3>AI Prompt Enhancement</h3>
           <p>Configure Gemini API to enhance your prompts with AI</p>
           <button className="btn btn-primary" onClick={() => setShowSettings(true)}>
-            <span>🔑</span> Set Up API Key
+            <Key size={16} style={{ marginRight: '8px' }} /> Set Up API Key
           </button>
         </div>
         <ApiKeyModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
@@ -104,18 +131,21 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
 
   const personaKeys = Object.keys(AI_PERSONAS);
   const currentPersona = AI_PERSONAS[selectedPersona];
+  const CurrentIcon = ICON_MAP[currentPersona.icon];
 
   return (
     <>
       <div className="prompt-enhancer">
         <div className="enhancer-header">
-          <h3>✨ AI Enhance</h3>
-          <button 
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} /> AI Enhance
+          </h3>
+          <button
             className="settings-btn"
             onClick={() => setShowSettings(true)}
             title="API Settings"
           >
-            ⚙️
+            <Settings size={18} />
           </button>
         </div>
 
@@ -125,6 +155,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
           <div className="persona-buttons">
             {personaKeys.map((key) => {
               const persona = AI_PERSONAS[key];
+              const Icon = ICON_MAP[persona.icon];
               return (
                 <button
                   key={key}
@@ -132,7 +163,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
                   onClick={() => setSelectedPersona(key)}
                   title={persona.description}
                 >
-                  <span className="persona-icon">{persona.icon}</span>
+                  <span className="persona-icon"><Icon size={16} /></span>
                   <span className="persona-name">{persona.name}</span>
                 </button>
               );
@@ -141,13 +172,13 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
         </div>
 
         <div className="enhancer-tabs">
-          <button 
+          <button
             className={cx('tab-btn', { active: activeTab === 'enhance' })}
             onClick={() => setActiveTab('enhance')}
           >
             Enhance
           </button>
-          <button 
+          <button
             className={cx('tab-btn', { active: activeTab === 'variations' })}
             onClick={() => setActiveTab('variations')}
           >
@@ -162,37 +193,43 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
               <div className="current-prompt-preview">
                 {currentPrompt || <span className="empty">No prompt entered yet</span>}
               </div>
-              
-              <button 
+
+              <button
                 className="btn btn-enhance"
                 onClick={handleEnhance}
                 disabled={isEnhancing || !currentPrompt?.trim()}
               >
                 {isEnhancing ? (
                   <>
-                    <span className="spinner"></span>
+                    <Loader2 size={18} className="spinner-icon" />
                     Enhancing...
                   </>
                 ) : (
                   <>
-                    <span>{currentPersona.icon}</span>
+                    <CurrentIcon size={18} />
                     Enhance as {currentPersona.name}
                   </>
                 )}
               </button>
+
+              {attachedImageInfo && (
+                <div className="info-message" style={{ marginTop: '8px', fontSize: '0.8rem', color: '#4caf50', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ImageIcon size={14} /> {attachedImageInfo}
+                </div>
+              )}
 
               {enhancedPrompt && (
                 <div className="result-card">
                   <div className="result-label">Enhanced prompt:</div>
                   <div className="result-text">{enhancedPrompt}</div>
                   <div className="result-actions">
-                    <button 
+                    <button
                       className="btn btn-small btn-primary"
                       onClick={() => handleApply(enhancedPrompt)}
                     >
                       Apply
                     </button>
-                    <button 
+                    <button
                       className="btn btn-small btn-secondary"
                       onClick={() => navigator.clipboard.writeText(enhancedPrompt)}
                     >
@@ -209,20 +246,20 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
               <p className="section-description">
                 Generate creative variations of your prompt
               </p>
-              
-              <button 
+
+              <button
                 className="btn btn-enhance"
                 onClick={handleGenerateVariations}
                 disabled={isGenerating || !currentPrompt?.trim()}
               >
                 {isGenerating ? (
                   <>
-                    <span className="spinner"></span>
+                    <Loader2 size={18} className="spinner-icon" />
                     Generating...
                   </>
                 ) : (
                   <>
-                    <span>🎲</span>
+                    <Dices size={18} />
                     Generate 3 Variations
                   </>
                 )}
@@ -235,13 +272,13 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
                       <div className="result-label">Variation {index + 1}</div>
                       <div className="result-text">{variation}</div>
                       <div className="result-actions">
-                        <button 
+                        <button
                           className="btn btn-small btn-primary"
                           onClick={() => handleApply(variation)}
                         >
                           Apply
                         </button>
-                        <button 
+                        <button
                           className="btn btn-small btn-secondary"
                           onClick={() => navigator.clipboard.writeText(variation)}
                         >
@@ -257,7 +294,7 @@ export function PromptEnhancer({ currentPrompt, onApplyPrompt }) {
 
           {error && (
             <div className="error-message">
-              <span>⚠️</span> {error}
+              <AlertTriangle size={16} /> {error}
             </div>
           )}
         </div>

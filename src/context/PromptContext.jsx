@@ -18,7 +18,7 @@ export function PromptProvider({ children }) {
 
   // Function to attach listeners to input element
   const attachListeners = useCallback((inputElement) => {
-    if (!inputElement) return () => {};
+    if (!inputElement) return () => { };
 
     function handleChange(event) {
       const value = getInputValue(event.target);
@@ -27,7 +27,7 @@ export function PromptProvider({ children }) {
 
     // For contenteditable elements (Quill, ProseMirror), listen to 'input' event
     const isEditable = isContentEditable(inputElement) || isProseMirror(inputElement) || isQuillEditor(inputElement);
-    
+
     if (isEditable) {
       inputElement.addEventListener('input', handleChange);
       inputElement.addEventListener('keyup', handleChange);
@@ -51,7 +51,7 @@ export function PromptProvider({ children }) {
   // Function to find and bind to input element
   const findAndBindInput = useCallback(() => {
     const inputElement = document.querySelector(inputSelector);
-    
+
     if (inputElement) {
       // Check if it's a different element than before
       if (inputRef.current !== inputElement) {
@@ -68,7 +68,7 @@ export function PromptProvider({ children }) {
         setInputFound(false);
       }
     }
-    return () => {};
+    return () => { };
   }, [inputSelector, attachListeners]);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export function PromptProvider({ children }) {
       // Check if our input still exists
       const currentInput = inputRef.current;
       const inputStillExists = currentInput && document.contains(currentInput);
-      
+
       if (!inputStillExists) {
         // Input was removed, try to find it again
         cleanup();
@@ -106,7 +106,7 @@ export function PromptProvider({ children }) {
 
     // Retry a few times with increasing delays
     const retryDelays = [100, 500, 1000, 2000];
-    const retryTimers = retryDelays.map((delay) => 
+    const retryTimers = retryDelays.map((delay) =>
       setTimeout(retryFind, delay)
     );
 
@@ -130,14 +130,14 @@ export function PromptProvider({ children }) {
     if (inputRef.current && document.contains(inputRef.current)) {
       return inputRef.current;
     }
-    
+
     // Try to find input again
     const inputElement = document.querySelector(inputSelector);
     if (inputElement) {
       inputRef.current = inputElement;
       return inputElement;
     }
-    
+
     console.warn('Could not find input element:', inputSelector);
     return null;
   }
@@ -149,7 +149,7 @@ export function PromptProvider({ children }) {
   function appendPromptText(text) {
     const input = getValidInput();
     if (!input) return;
-    
+
     const currentValue = getInputValue(input);
     setNativeInputValue(input, currentValue + text);
     setPromptText(currentValue + text);
@@ -165,7 +165,7 @@ export function PromptProvider({ children }) {
 
     const currentValue = getInputValue(input);
     const lastIndex = currentValue.lastIndexOf(text);
-    
+
     if (lastIndex !== -1) {
       const newValue = currentValue.slice(0, lastIndex) + currentValue.slice(lastIndex + text.length);
       setNativeInputValue(input, newValue);
@@ -180,7 +180,7 @@ export function PromptProvider({ children }) {
   function setPromptTextValue(text) {
     const input = getValidInput();
     if (!input) return;
-    
+
     setNativeInputValue(input, text);
     setPromptText(text);
   }

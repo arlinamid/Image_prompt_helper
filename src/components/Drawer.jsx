@@ -9,21 +9,22 @@ import { AboutTab } from './AboutTab';
 import { PromptProvider, usePromptContext } from '../context/PromptContext';
 import { cx } from '../utils/helpers';
 import categories from '../data/categories.json';
+import { Palette, Sparkles, Info, Search } from 'lucide-react';
 
 // Main navigation tabs
 const MAIN_TABS = [
-  { id: 'keywords', label: 'Keywords', icon: '🎨' },
-  { id: 'enhance', label: 'AI Enhance', icon: '✨' },
-  { id: 'about', label: 'About', icon: 'ℹ️' },
+  { id: 'keywords', label: 'Keywords', icon: <Palette size={18} /> },
+  { id: 'enhance', label: 'AI Enhance', icon: <Sparkles size={18} /> },
+  { id: 'about', label: 'About', icon: <Info size={18} /> },
 ];
 
 /**
  * Keywords tab content with prompt context access
  */
-function KeywordsContent({ 
-  searchQuery, 
-  setSearchQuery, 
-  selectedCategory, 
+function KeywordsContent({
+  searchQuery,
+  setSearchQuery,
+  selectedCategory,
   setSelectedCategory,
   filteredSubcategories,
   resultsCount,
@@ -41,12 +42,12 @@ function KeywordsContent({
 
   return (
     <>
-      <SearchBar 
-        value={searchQuery} 
+      <SearchBar
+        value={searchQuery}
         onChange={setSearchQuery}
         placeholder={`Search in ${selectedCategory}...`}
       />
-      
+
       <CategoryTabs
         categories={categories}
         selectedCategory={selectedCategory}
@@ -81,7 +82,7 @@ function KeywordsContent({
             ))
           ) : (
             <div className="no-results">
-              <div className="no-results-icon">🔍</div>
+              <div className="no-results-icon"><Search size={48} /></div>
               <h3>No keywords found</h3>
               <p>Try a different search term or browse other categories</p>
             </div>
@@ -104,8 +105,8 @@ function EnhanceContent() {
 
   return (
     <div className="drawer-content enhance-content">
-      <PromptEnhancer 
-        currentPrompt={promptText} 
+      <PromptEnhancer
+        currentPrompt={promptText}
         onApplyPrompt={handleApplyEnhancedPrompt}
       />
     </div>
@@ -160,7 +161,7 @@ export function Drawer({ open, onClose }) {
       {/* Header */}
       <div className="drawer-sticky-header">
         <Header onClose={onClose} />
-        
+
         {/* Main Navigation Tabs */}
         <nav className="main-tabs">
           {MAIN_TABS.map((tab) => (

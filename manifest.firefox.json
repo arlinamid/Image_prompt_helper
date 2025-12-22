@@ -1,22 +1,30 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Image Prompt Helper",
   "description": "A curated library of 3,143 prompt keywords + AI enhancement for AI image generation",
-  "version": "1.2.1",
+  "version": "1.3.1",
   "icons": {
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "browser_action": {
+  "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
       "48": "icon48.png",
       "128": "icon128.png"
     }
   },
+  "background": {
+    "scripts": [
+      "assets/background.js"
+    ],
+    "type": "module"
+  },
   "content_scripts": [
     {
-      "js": ["assets/contentScript.js"],
+      "js": [
+        "assets/contentScript.js"
+      ],
       "matches": [
         "https://www.bing.com/*",
         "https://tengr.ai/*",
@@ -25,21 +33,39 @@
         "https://gemini.google.com/*",
         "https://ideogram.ai/*"
       ],
-      "css": ["assets/style.css"]
+      "css": [
+        "assets/style.css"
+      ]
     }
   ],
   "web_accessible_resources": [
-    "assets/*"
+    {
+      "resources": [
+        "assets/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ],
   "permissions": [
     "storage",
     "activeTab",
+    "contextMenus",
+    "clipboardWrite",
+    "scripting"
+  ],
+  "host_permissions": [
     "https://www.bing.com/*",
     "https://tengr.ai/*",
     "https://app.leonardo.ai/*",
     "https://chatgpt.com/*",
     "https://gemini.google.com/*",
-    "https://ideogram.ai/*"
+    "https://ideogram.ai/*",
+    "https://lh3.googleusercontent.com/*",
+    "https://*.googleusercontent.com/*",
+    "https://oaidalleapiprodscus.blob.core.windows.net/*",
+    "https://*.blob.core.windows.net/*"
   ],
   "browser_specific_settings": {
     "gecko": {
@@ -48,4 +74,3 @@
     }
   }
 }
-

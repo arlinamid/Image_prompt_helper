@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { saveApiKey, getApiKey, testApiKey } from '../services/geminiApi';
 import { cx } from '../utils/helpers';
+import { Key, Eye, EyeOff, Check, XCircle, Loader2, X } from 'lucide-react';
 
 /**
  * Modal for API key configuration
@@ -24,7 +25,7 @@ export function ApiKeyModal({ isOpen, onClose }) {
 
   async function handleTest() {
     if (!apiKey.trim()) return;
-    
+
     setStatus('testing');
     const isValid = await testApiKey(apiKey);
     setStatus(isValid ? 'valid' : 'invalid');
@@ -41,14 +42,14 @@ export function ApiKeyModal({ isOpen, onClose }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>🔑 API Key Settings</h2>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Key size={20} /> API Key Settings
+          </h2>
           <button className="modal-close" onClick={onClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
+            <X size={20} />
           </button>
         </div>
-        
+
         <div className="modal-body">
           <p className="modal-description">
             Enter your Google Gemini API key to enable AI prompt enhancement.
@@ -57,7 +58,7 @@ export function ApiKeyModal({ isOpen, onClose }) {
               Google AI Studio
             </a>
           </p>
-          
+
           <div className="api-key-input-group">
             <input
               type={showKey ? 'text' : 'password'}
@@ -66,34 +67,34 @@ export function ApiKeyModal({ isOpen, onClose }) {
               placeholder="Enter your API key..."
               className="api-key-input"
             />
-            <button 
+            <button
               className="toggle-visibility"
               onClick={() => setShowKey(!showKey)}
               type="button"
             >
-              {showKey ? '🙈' : '👁️'}
+              {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
           {status && (
-            <div className={cx('api-status', status)}>
-              {status === 'testing' && '⏳ Testing...'}
-              {status === 'valid' && '✅ API key is valid!'}
-              {status === 'invalid' && '❌ Invalid API key'}
+            <div className={cx('api-status', status)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              {status === 'testing' && <><Loader2 size={16} className="spinner-icon" /> Testing...</>}
+              {status === 'valid' && <><Check size={16} /> API key is valid!</>}
+              {status === 'invalid' && <><XCircle size={16} /> Invalid API key</>}
             </div>
           )}
         </div>
 
         <div className="modal-footer">
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             onClick={handleTest}
             disabled={!apiKey.trim() || status === 'testing'}
           >
             Test Key
           </button>
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             onClick={handleSave}
             disabled={!apiKey.trim()}
           >

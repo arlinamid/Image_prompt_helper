@@ -13,11 +13,11 @@ async function getClient(apiKey) {
   if (!apiKey) {
     throw new Error('API_KEY_MISSING');
   }
-  
+
   if (aiClient && currentApiKey === apiKey) {
     return aiClient;
   }
-  
+
   aiClient = new GoogleGenAI({ apiKey });
   currentApiKey = apiKey;
   return aiClient;
@@ -76,7 +76,7 @@ export async function testApiKey(apiKey) {
 /**
  * Call Gemini API with a prompt
  */
-async function callGemini(systemInstruction, userPrompt) {
+async function callGemini(systemInstruction, userPrompt, image = null) {
   const apiKey = await getApiKey();
   if (!apiKey) {
     throw new Error('API_KEY_MISSING');
@@ -84,53 +84,83 @@ async function callGemini(systemInstruction, userPrompt) {
 
   try {
     const client = await getClient(apiKey);
-    
+
+    // Construct content parts
+    const parts = [{ text: systemInstruction }];
+
+    // Add images if provided
+    if (image) {
+      const images = Array.isArray(image) ? image : [image];
+
+      images.forEach(img => {
+        // image object structure: { mimeType: string, data: base64string }
+        parts.push({
+          inlineData: {
+            mimeType: img.mimeType,
+            data: img.data
+          }
+        });
+      });
+
+      // Add instruction about the image(s)
+      const imageCount = images.length;
+      parts.push({ text: `Note: The user has attached ${imageCount} image${imageCount > 1 ? 's' : ''} to this prompt. Use ${imageCount > 1 ? 'these images' : 'this image'} as context for the enhancement.` });
+    }
+
+    parts.push({ text: `User prompt: ${userPrompt}` });
+
     const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: `${systemInstruction}\n\nUser prompt: ${userPrompt}`,
+      contents: [{ role: 'user', parts: parts }],
     });
 
-    console.log('Gemini response:', response);
+    console.log('Gemini full response:', JSON.stringify(response, null, 2));
 
     // Check for blocked content
     if (response?.promptFeedback?.blockReason) {
       throw new Error('CONTENT_BLOCKED');
     }
 
-    // Get the text response
-    const text = response?.text;
-    
+    // Get the text response - handle function or property
+    let text;
+    if (typeof response.text === 'function') {
+      text = response.text();
+    } else {
+      text = response.text;
+    }
+
     if (!text) {
       // Try alternative access
       const candidates = response?.candidates;
       if (candidates && candidates[0]?.content?.parts?.[0]?.text) {
         return candidates[0].content.parts[0].text.trim();
       }
+      console.error('No text in response:', response);
       throw new Error('NO_RESPONSE');
     }
 
     return text.trim();
   } catch (error) {
     console.error('Gemini API error:', error);
-    
-    if (error.message === 'API_KEY_MISSING' || 
-        error.message === 'CONTENT_BLOCKED' || 
-        error.message === 'NO_RESPONSE') {
+
+    if (error.message === 'API_KEY_MISSING' ||
+      error.message === 'CONTENT_BLOCKED' ||
+      error.message === 'NO_RESPONSE') {
       throw error;
     }
-    
+
     if (error.message?.includes('API key not valid')) {
       throw new Error('INVALID_API_KEY');
     }
-    
+
     if (error.message?.includes('quota') || error.message?.includes('rate')) {
       throw new Error('RATE_LIMITED');
     }
-    
+
     if (error.message?.includes('network') || error.message?.includes('fetch')) {
       throw new Error('NETWORK_ERROR');
     }
-    
+
     throw new Error('API_ERROR');
   }
 }
@@ -141,7 +171,7 @@ async function callGemini(systemInstruction, userPrompt) {
 export const AI_PERSONAS = {
   photographer: {
     name: 'Photographer',
-    icon: '📷',
+    icon: 'Camera',
     description: 'Professional photography style with technical camera settings',
     systemInstruction: `You are a world-class professional photographer with expertise in all photography styles - portrait, landscape, street, wildlife, fashion, and product photography.
 
@@ -162,10 +192,10 @@ Rules:
 4. Keep it 60-120 words
 5. Return ONLY the enhanced prompt, no explanations`
   },
-  
+
   painter: {
     name: 'Painter',
-    icon: '🎨',
+    icon: 'Palette',
     description: 'Classical and modern art styles with painterly techniques',
     systemInstruction: `You are a master artist with deep knowledge of art history, from Renaissance masters to contemporary digital art.
 
@@ -186,10 +216,10 @@ Rules:
 4. Keep it 60-120 words
 5. Return ONLY the enhanced prompt, no explanations`
   },
-  
+
   prompter: {
     name: 'Image Prompter',
-    icon: '✨',
+    icon: 'Sparkles',
     description: 'Optimized prompts for AI image generation',
     systemInstruction: `You are an expert AI image prompt engineer specializing in Midjourney, DALL-E, Stable Diffusion, and other AI art generators.
 
@@ -212,16 +242,32 @@ Rules:
   }
 };
 
+const IMAGE_MODIFICATION_INSTRUCTION = `You are an expert AI image editor.
+Your task: Write a precise, clear instruction for an AI model to modify the attached image based on the user's prompt.
+
+Rules:
+1. ALWAYS begin or end with "Maintain strict character and facial consistency with the original image."
+2. Focus strictly on the modifications requested by the user.
+3. Do not describe the entire scene from scratch.
+4. Output should be a direct instruction (e.g., "Change the lighting to...", "Add a hat to...").
+5. Keep it concise but ensure the consistency requirement is present.`;
+
 /**
  * Enhance a prompt with selected AI persona
  */
-export async function enhancePrompt(prompt, persona = 'prompter') {
+export async function enhancePrompt(prompt, persona = 'prompter', image = null) {
   if (!prompt?.trim()) {
     throw new Error('EMPTY_PROMPT');
   }
 
   const selectedPersona = AI_PERSONAS[persona] || AI_PERSONAS.prompter;
-  return await callGemini(selectedPersona.systemInstruction, prompt);
+
+  // If an image is attached, we want to instruct the model to modify it, not describe a new scene
+  const systemInstruction = image
+    ? IMAGE_MODIFICATION_INSTRUCTION
+    : selectedPersona.systemInstruction;
+
+  return await callGemini(systemInstruction, prompt, image);
 }
 
 /**
@@ -233,11 +279,11 @@ export async function generateVariations(prompt, count = 3, persona = 'prompter'
   }
 
   const selectedPersona = AI_PERSONAS[persona] || AI_PERSONAS.prompter;
-  const personaContext = persona === 'photographer' 
+  const personaContext = persona === 'photographer'
     ? 'different photography styles, camera angles, and lighting setups'
     : persona === 'painter'
-    ? 'different art movements, techniques, and artistic interpretations'
-    : 'different visual styles, moods, and artistic directions';
+      ? 'different art movements, techniques, and artistic interpretations'
+      : 'different visual styles, moods, and artistic directions';
 
   const systemInstruction = `You are a ${selectedPersona.name}. Generate ${count} creative variations of the given prompt.
 
@@ -257,11 +303,11 @@ Format:
 3. [Third variation]`;
 
   const response = await callGemini(systemInstruction, prompt);
-  
+
   // Parse the numbered variations
   const lines = response.split('\n').filter(line => line.trim());
   const variations = [];
-  
+
   for (const line of lines) {
     // Remove numbering and clean up
     const cleaned = line.replace(/^\d+[\.\)]\s*/, '').trim();
@@ -269,7 +315,7 @@ Format:
       variations.push(cleaned);
     }
   }
-  
+
   return variations.slice(0, count);
 }
 

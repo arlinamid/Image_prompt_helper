@@ -62,7 +62,7 @@ export function setNativeInputValue(element, value) {
   if (isContentEditable(element) || isProseMirror(element) || isQuillEditor(element)) {
     // Clean value - remove extra newlines
     const cleanValue = value.replace(/\n+$/, '').replace(/^\n+/, '');
-    
+
     // For ProseMirror (ChatGPT), wrap in <p> tag
     if (isProseMirror(element)) {
       element.innerHTML = `<p>${cleanValue}</p>`;
@@ -73,7 +73,7 @@ export function setNativeInputValue(element, value) {
       // For other contenteditable
       element.textContent = cleanValue;
     }
-    
+
     // Move cursor to end
     const range = document.createRange();
     const sel = window.getSelection();
@@ -81,27 +81,27 @@ export function setNativeInputValue(element, value) {
     range.collapse(false);
     sel.removeAllRanges();
     sel.addRange(range);
-    
+
     // Dispatch input event - Quill and other editors listen for this
-    element.dispatchEvent(new InputEvent('input', { 
-      bubbles: true, 
+    element.dispatchEvent(new InputEvent('input', {
+      bubbles: true,
       cancelable: true,
       inputType: 'insertText'
     }));
-    
+
     // Also dispatch a custom event that some frameworks listen for
     element.dispatchEvent(new Event('change', { bubbles: true }));
   } else {
     // For regular inputs/textareas
     const previousValue = element.value;
     element.value = value;
-    
+
     // Handle React's value tracker
     const tracker = element._valueTracker;
     if (tracker) {
       tracker.setValue(previousValue);
     }
-    
+
     element.dispatchEvent(new Event('input', { bubbles: true }));
   }
 }
@@ -113,10 +113,10 @@ export function setNativeInputValue(element, value) {
  */
 export function cx(...args) {
   const classes = [];
-  
+
   for (const arg of args) {
     if (!arg) continue;
-    
+
     if (typeof arg === 'string') {
       classes.push(arg);
     } else if (typeof arg === 'object') {
@@ -127,7 +127,7 @@ export function cx(...args) {
       }
     }
   }
-  
+
   return classes.join(' ');
 }
 
@@ -196,11 +196,11 @@ export function resolveImagePath(categoryName, keyword) {
   if (keyword.imagePath) {
     return keyword.imagePath;
   }
-  
+
   if (keyword.image) {
     return keyword.image;
   }
-  
+
   // Default image paths based on category
   const categoryImageFolders = {
     'Artists': 'Artists',
@@ -211,10 +211,10 @@ export function resolveImagePath(categoryName, keyword) {
     'Fashion': 'predefined',
     'Architecture': 'predefined',
   };
-  
+
   const folder = categoryImageFolders[categoryName] || 'midjourneyV5';
   const fileName = keyword.name.toLowerCase().replace(/\s+/g, '-') + '.webp';
-  
+
   return `${folder}/${fileName}`;
 }
 
@@ -232,3 +232,55 @@ export function debounce(fn, delay) {
   };
 }
 
+/**
+ * Get attached images from the input area (Gemini & ChatGPT)
+ * @returns {Promise<Object|null>} Image object { mimeType, data } or null
+ */
+export async function getAttachedImages() {
+  const images = [];
+  const host = document.location.hostname;
+
+  try {
+    if (host === 'gemini.google.com') {
+      const imgElements = document.querySelectorAll('uploader-file-preview img[src^="blob:"]');
+      for (const img of imgElements) {
+        try {
+          const response = await fetch(img.src);
+          const blob = await response.blob();
+          const base64 = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+          // base64 is "data:image/png;base64,..."
+          const [meta, data] = base64.split(',');
+          const mimeType = meta.split(':')[1].split(';')[0];
+          images.push({ mimeType, data });
+        } catch (e) {
+          console.error('Failed to fetch blob image:', e);
+        }
+      }
+    } else if (host === 'chatgpt.com') {
+      // Check for background images with data uris in the input area
+      // User provided: style="background-image: url(&quot;data:image/png;base64,...&quot;)"
+      // Targeting both div and span as structure can vary
+      const elements = document.querySelectorAll('[style*="background-image"][style*="data:image"]');
+      for (const el of elements) {
+        const style = el.getAttribute('style');
+        // Match various quote styles
+        const match = style.match(/url\((?:&quot;|"|')?(data:image\/[^;]+;base64,[^&"'\)]+)(?:&quot;|"|')?\)/);
+
+        if (match && match[1]) {
+          const base64 = match[1];
+          const [meta, data] = base64.split(',');
+          const mimeType = meta.split(':')[1].split(';')[0];
+          images.push({ mimeType, data });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error getting attached images:', err);
+  }
+
+  return images.length > 0 ? images : null;
+}
